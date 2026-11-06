@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Parkway Global Partners</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+  :root{
+    --cream:#faf3e8;
+    --cream-deep:#f3e5cf;
+    --ink:#2c2420;
+    --ink-soft:#6b5d52;
+    --orange:#c9722b;
+    --orange-soft:#f0ddc4;
+    --teal:#2f6f74;
+    --teal-soft:#dcebe9;
+    --gold:#b8863b;
+    --gold-soft:#f1e3c8;
+    --line:#e7d9c4;
+    --card:#ffffff;
+    --shadow: 0 10px 30px rgba(44,36,32,0.14);
+    --radius: 18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --cream:#201a15;
+      --cream-deep:#241d17;
+      --ink:#f4eade;
+      --ink-soft:#c9b9a8;
+      --orange-soft:#3a2a1a;
+      --teal-soft:#16302e;
+      --gold-soft:#332818;
+      --line:#3a2e22;
+      --card:#2a221b;
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--cream);color:var(--ink);font-family:"Cabin","Segoe UI",system-ui,sans-serif;}
+  #app{display:flex;min-height:100vh;}
+  #sidebar{
+    width:340px;min-width:340px;background:var(--cream-deep);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;max-height:100vh;position:sticky;top:0;
+  }
+  .sb-head{padding:22px 22px 14px;border-bottom:1px solid var(--line);}
+  .sb-head h1{margin:0 0 4px;font-size:20px;letter-spacing:.02em;}
+  .sb-head p{margin:0;font-size:13px;color:var(--ink-soft);}
+  .stats{display:flex;gap:10px;margin-top:12px;}
+  .stat{flex:1;background:var(--card);border-radius:12px;padding:8px 10px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);}
+  .stat b{display:block;font-size:17px;color:var(--orange);}
+  .stat span{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;padding:14px 22px;border-bottom:1px solid var(--line);}
+  .filter-chip{
+    display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1.5px solid var(--line);
+    background:var(--card);font-size:12.5px;cursor:pointer;user-select:none;transition:transform .12s ease;
+  }
+  .filter-chip:hover{transform:translateY(-1px);}
+  .filter-chip .dot{width:9px;height:9px;border-radius:50%;}
+  .filter-chip.off{opacity:.4;}
+  #list{flex:1;overflow-y:auto;padding:6px 10px 20px;}
+  .group{margin:10px 10px 0;}
+  .group summary{
+    list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+    padding:10px 10px;border-radius:10px;font-weight:700;font-size:13px;letter-spacing:.02em;
+  }
+  .group summary::-webkit-details-marker{display:none;}
+  .group summary .chev{transition:transform .15s ease;font-size:11px;color:var(--ink-soft);}
+  .group[open] summary .chev{transform:rotate(90deg);}
+  .group .count{font-weight:500;color:var(--ink-soft);font-size:11.5px;}
+  .row{
+    display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;cursor:pointer;
+    transition:background .12s ease;
+  }
+  .row:hover,.row.active{background:var(--card);}
+  .row img{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--card);box-shadow:0 1px 4px rgba(0,0,0,.18);}
+  .row .ph-fallback{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;}
+  .row .meta{min-width:0;}
+  .row .meta .nm{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .row .meta .loc{font-size:11px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #map-wrap{flex:1;position:relative;}
+  #map{position:absolute;inset:0;}
+  .brand-ribbon{
+    position:absolute;z-index:500;top:16px;left:16px;background:rgba(255,255,255,.92);backdrop-filter:blur(4px);
+    padding:10px 16px;border-radius:12px;box-shadow:var(--shadow);font-size:12.5px;color:var(--ink);display:none;
+  }
+  @media (prefers-color-scheme: dark){ .brand-ribbon{background:rgba(42,34,27,.9);} }
+  #fs-btn{
+    position:absolute;z-index:500;top:16px;right:16px;width:38px;height:38px;border-radius:10px;border:none;
+    background:var(--card);box-shadow:var(--shadow);cursor:pointer;display:flex;align-items:center;justify-content:center;
+    color:var(--ink);
+  }
+  #mobile-toggle{display:none;}
+  .leaflet-popup-content-wrapper{border-radius:16px;padding:0;overflow:hidden;box-shadow:var(--shadow);}
+  .leaflet-popup-content{margin:0;width:260px !important;}
+  .leaflet-popup-tip{box-shadow:none;}
+  .pop{display:flex;flex-direction:column;}
+  .pop img{width:100%;height:150px;object-fit:cover;}
+  .pop-body{padding:14px 16px 16px;}
+  .pop-cat{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:8px;}
+  .pop h3{margin:0 0 4px;font-size:16px;color:var(--ink);}
+  .pop .loc{font-size:12.5px;color:var(--ink-soft);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+  .pop p.note{font-size:12.5px;color:var(--ink);line-height:1.4;margin:0 0 10px;}
+  .pop a.learn{display:inline-block;font-size:12.5px;font-weight:700;color:var(--teal);text-decoration:none;border-bottom:1.5px solid var(--teal);}
+
+  .pin{position:relative;width:46px;height:56px;cursor:pointer;}
+  .pin .ring{
+    position:absolute;top:7.7px;left:3px;width:40px;height:40px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+    box-shadow:0 3px 8px rgba(0,0,0,.3);
+  }
+  .pin img, .pin .fallback{
+    position:absolute;top:11.7px;left:7px;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;
+  }
+  .pin .fallback{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;background:#999;}
+  .pin:hover{z-index:1000 !important;}
+  .pin:hover .ring{filter:brightness(1.1);}
+
+  @media (max-width: 860px){
+    #app{flex-direction:column;}
+    #sidebar{
+      position:fixed;inset:0 0 0 auto;width:86vw;min-width:0;max-width:360px;z-index:1200;
+      transform:translateX(100%);transition:transform .25s ease;box-shadow:-10px 0 30px rgba(0,0,0,.25);
+    }
+    #sidebar.open{transform:translateX(0);}
+    #map-wrap{height:100vh;width:100%;}
+    #mobile-toggle{
+      display:flex;position:absolute;z-index:900;top:16px;left:16px;align-items:center;gap:8px;
+      background:var(--card);border:none;border-radius:12px;padding:10px 14px;box-shadow:var(--shadow);font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;
+    }
+    #fs-btn{display:none;}
+    #sb-close{display:block !important;}
+  }
+  #sb-close{display:none;position:absolute;top:14px;right:14px;background:none;border:none;font-size:20px;color:var(--ink-soft);cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <button id="sb-close" aria-label="Close">&times;</button>
+    <div class="sb-head">
+      <h1>Parkway Global Partners</h1>
+      <p>Explore where our missionaries are serving around the world.</p>
+      <div class="stats">
+        <div class="stat"><b id="stat-total">0</b><span>Partners</span></div>
+        <div class="stat"><b id="stat-countries">0</b><span>Countries</span></div>
+        <div class="stat"><b id="stat-cats">3</b><span>Categories</span></div>
+      </div>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div id="list"></div>
+  </aside>
+
+  <div id="map-wrap">
+    <button id="mobile-toggle">&#9776; Partner List</button>
+    <button id="fs-btn" title="Fullscreen" aria-label="Toggle fullscreen">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+    </button>
+    <div id="map"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+const PARTNERS = __PARTNERS_JSON__;
+
+const CATS = {
+  planters: { label: "Church Planters", color: "#2f6f74", soft: "var(--teal-soft)" },
+  outreach: { label: "Gospel Outreach", color: "#c9722b", soft: "var(--orange-soft)" },
+  support:  { label: "Gospel Support",  color: "#b8863b", soft: "var(--gold-soft)" },
+};
+
+const map = L.map('map', { zoomControl: true, worldCopyJump: true, minZoom: 2 })
+  .setView([22, -10], 3);
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+  maxZoom: 16,
+}).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+  maxZoom: 16,
+  pane: 'shadowPane',
+}).addTo(map);
+
+function initials(name){
+  return name.replace(/\(.*?\)/g,'').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+function makeIcon(p){
+  const c = CATS[p.cat].color;
+  const inner = p.photo
+    ? `<img src="${p.photo}" alt="">`
+    : `<div class="fallback" style="background:${c}">${initials(p.name)}</div>`;
+  return L.divIcon({
+    className: '',
+    html: `<div class="pin"><div class="ring" style="background:${c}"></div>${inner}</div>`,
+    iconSize: [46,56],
+    iconAnchor: [23,56],
+    popupAnchor: [0,-50],
+  });
+}
+
+function popupHtml(p){
+  const cat = CATS[p.cat];
+  const photo = p.photo ? `<img src="${p.photo}" alt="">` : '';
+  const learn = p.link ? `<a class="learn" href="${p.link}" target="_blank" rel="noopener">Visit website &rarr;</a>` : '';
+  const note = (!p.link && p.note) ? `<p class="note">${p.note}</p>` : '';
+  return `<div class="pop">${photo}<div class="pop-body">
+    <span class="pop-cat" style="background:${cat.soft};color:${cat.color}">${cat.label}</span>
+    <h3>${p.name}</h3>
+    <div class="loc">&#128205; ${p.location}</div>
+    ${note}${learn}
+  </div></div>`;
+}
+
+const markers = {};
+const layerByCat = { planters: L.layerGroup(), outreach: L.layerGroup(), support: L.layerGroup() };
+Object.values(layerByCat).forEach(l => l.addTo(map));
+
+PARTNERS.forEach(p => {
+  const m = L.marker([p.lat, p.lng], { icon: makeIcon(p) }).bindPopup(popupHtml(p));
+  m.on('click', () => setActiveRow(p.id));
+  markers[p.id] = m;
+  layerByCat[p.cat].addLayer(m);
+});
+
+// --- Sidebar: filters ---
+const filtersEl = document.getElementById('filters');
+const activeCats = new Set(Object.keys(CATS));
+Object.entries(CATS).forEach(([key, cfg]) => {
+  const chip = document.createElement('div');
+  chip.className = 'filter-chip';
+  chip.innerHTML = `<span class="dot" style="background:${cfg.color}"></span>${cfg.label}`;
+  chip.addEventListener('click', () => {
+    if (activeCats.has(key)) {
+      activeCats.delete(key);
+      chip.classList.add('off');
+      map.removeLayer(layerByCat[key]);
+    } else {
+      activeCats.add(key);
+      chip.classList.remove('off');
+      layerByCat[key].addTo(map);
+    }
+    renderList();
+  });
+  filtersEl.appendChild(chip);
+});
+
+// --- Sidebar: grouped list ---
+const listEl = document.getElementById('list');
+function renderList(){
+  listEl.innerHTML = '';
+  Object.keys(CATS).forEach(key => {
+    if (!activeCats.has(key)) return;
+    const items = PARTNERS.filter(p => p.cat === key);
+    const cfg = CATS[key];
+    const details = document.createElement('details');
+    details.className = 'group';
+    details.open = true;
+    const summary = document.createElement('summary');
+    summary.style.color = cfg.color;
+    summary.innerHTML = `<span>&#9654; ${cfg.label}</span><span class="count">${items.length}</span>`;
+    const chev = summary.querySelector('span');
+    details.appendChild(summary);
+    items.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.dataset.id = p.id;
+      const img = p.photo
+        ? `<img src="${p.photo}" alt="">`
+        : `<div class="ph-fallback" style="background:${cfg.color}">${initials(p.name)}</div>`;
+      row.innerHTML = `${img}<div class="meta"><div class="nm">${p.name}</div><div class="loc">${p.location}</div></div>`;
+      row.addEventListener('click', () => {
+        map.flyTo([p.lat, p.lng], Math.max(map.getZoom(), 5), { duration: 0.6 });
+        markers[p.id].openPopup();
+        setActiveRow(p.id);
+        if (window.innerWidth <= 860) closeSidebar();
+      });
+      details.appendChild(row);
+    });
+    listEl.appendChild(details);
+  });
+}
+function setActiveRow(id){
+  document.querySelectorAll('.row.active').forEach(r => r.classList.remove('active'));
+  const row = document.querySelector(`.row[data-id="${id}"]`);
+  if (row) row.scrollIntoView({ block: 'nearest' });
+  if (row) row.classList.add('active');
+}
+renderList();
+
+document.getElementById('stat-total').textContent = PARTNERS.length;
+document.getElementById('stat-countries').textContent = new Set(PARTNERS.map(p => p.location.split(',').pop().trim())).size;
+
+// --- Fullscreen ---
+document.getElementById('fs-btn').addEventListener('click', () => {
+  const el = document.getElementById('app');
+  if (!document.fullscreenElement) el.requestFullscreen?.();
+  else document.exitFullscreen?.();
+});
+
+// --- Mobile sidebar ---
+const sidebar = document.getElementById('sidebar');
+function closeSidebar(){ sidebar.classList.remove('open'); }
+document.getElementById('mobile-toggle').addEventListener('click', () => sidebar.classList.add('open'));
+document.getElementById('sb-close').addEventListener('click', closeSidebar);
+</script>
+</body>
+</html>
