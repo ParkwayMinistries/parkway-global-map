@@ -53,17 +53,7 @@
     content:"";position:absolute;inset:0 0 auto 0;height:5px;
     background:linear-gradient(90deg, var(--teal) 0%, var(--teal) 33%, var(--orange) 33%, var(--orange) 66%, var(--plum) 66%, var(--plum) 100%);
   }
-  .eyebrow{
-    display:flex;align-items:center;gap:8px;margin:6px 0 10px;
-  }
-  .eyebrow .globe{
-    width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg, var(--teal), var(--orange));color:#fff;box-shadow:0 3px 8px rgba(44,36,32,.22);
-  }
-  .eyebrow span{
-    font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);
-  }
-  .sb-head h1{margin:0 0 5px;font-size:23px;font-weight:800;letter-spacing:.01em;color:var(--ink);}
+  .sb-head .logo{display:block;height:54px;width:auto;margin:6px 0 12px;}
   .sb-head p{margin:0;font-size:13px;color:var(--ink-soft);line-height:1.45;}
   .stats{display:flex;gap:10px;margin-top:12px;}
   .stat{flex:1;background:var(--card);border-radius:12px;padding:8px 10px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);}
@@ -157,13 +147,7 @@
   <aside id="sidebar">
     <button id="sb-close" aria-label="Close">&times;</button>
     <div class="sb-head">
-      <div class="eyebrow">
-        <div class="globe">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>
-        </div>
-        <span>Parkway Global</span>
-      </div>
-      <h1>Global Partners</h1>
+      <img class="logo" src="assets/logo.png" alt="Parkway Global Partners">
       <p>Explore where our missionaries are serving around the world.</p>
       <div class="stats">
         <div class="stat"><b id="stat-total">0</b><span>Partners</span></div>
