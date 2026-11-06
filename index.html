@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Parkway Global Partners</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --cream:#faf3e8;
@@ -15,8 +18,8 @@
     --orange-soft:#f0ddc4;
     --teal:#2f6f74;
     --teal-soft:#dcebe9;
-    --gold:#b8863b;
-    --gold-soft:#f1e3c8;
+    --plum:#7d3f5c;
+    --plum-soft:#ecd9e1;
     --line:#e7d9c4;
     --card:#ffffff;
     --shadow: 0 10px 30px rgba(44,36,32,0.14);
@@ -30,7 +33,7 @@
       --ink-soft:#c9b9a8;
       --orange-soft:#3a2a1a;
       --teal-soft:#16302e;
-      --gold-soft:#332818;
+      --plum-soft:#34202a;
       --line:#3a2e22;
       --card:#2a221b;
       --shadow: 0 10px 30px rgba(0,0,0,0.45);
@@ -43,9 +46,25 @@
     width:340px;min-width:340px;background:var(--cream-deep);border-right:1px solid var(--line);
     display:flex;flex-direction:column;max-height:100vh;position:sticky;top:0;
   }
-  .sb-head{padding:22px 22px 14px;border-bottom:1px solid var(--line);}
-  .sb-head h1{margin:0 0 4px;font-size:20px;letter-spacing:.02em;}
-  .sb-head p{margin:0;font-size:13px;color:var(--ink-soft);}
+  .sb-head{
+    padding:24px 22px 16px;border-bottom:1px solid var(--line);position:relative;overflow:hidden;
+  }
+  .sb-head::before{
+    content:"";position:absolute;inset:0 0 auto 0;height:5px;
+    background:linear-gradient(90deg, var(--teal) 0%, var(--teal) 33%, var(--orange) 33%, var(--orange) 66%, var(--plum) 66%, var(--plum) 100%);
+  }
+  .eyebrow{
+    display:flex;align-items:center;gap:8px;margin:6px 0 10px;
+  }
+  .eyebrow .globe{
+    width:30px;height:30px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg, var(--teal), var(--orange));color:#fff;box-shadow:0 3px 8px rgba(44,36,32,.22);
+  }
+  .eyebrow span{
+    font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--orange);
+  }
+  .sb-head h1{margin:0 0 5px;font-size:23px;font-weight:800;letter-spacing:.01em;color:var(--ink);}
+  .sb-head p{margin:0;font-size:13px;color:var(--ink-soft);line-height:1.45;}
   .stats{display:flex;gap:10px;margin-top:12px;}
   .stat{flex:1;background:var(--card);border-radius:12px;padding:8px 10px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05);}
   .stat b{display:block;font-size:17px;color:var(--orange);}
@@ -138,7 +157,13 @@
   <aside id="sidebar">
     <button id="sb-close" aria-label="Close">&times;</button>
     <div class="sb-head">
-      <h1>Parkway Global Partners</h1>
+      <div class="eyebrow">
+        <div class="globe">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>
+        </div>
+        <span>Parkway Global</span>
+      </div>
+      <h1>Global Partners</h1>
       <p>Explore where our missionaries are serving around the world.</p>
       <div class="stats">
         <div class="stat"><b id="stat-total">0</b><span>Partners</span></div>
@@ -166,11 +191,16 @@ const PARTNERS = [{"id": "0050e3e7-671b-4ac0-8198-1f343ff0695b", "name": "Al Rei
 const CATS = {
   planters: { label: "Church Planters", color: "#2f6f74", soft: "var(--teal-soft)" },
   outreach: { label: "Gospel Outreach", color: "#c9722b", soft: "var(--orange-soft)" },
-  support:  { label: "Gospel Support",  color: "#b8863b", soft: "var(--gold-soft)" },
+  support:  { label: "Gospel Support",  color: "#7d3f5c", soft: "var(--plum-soft)" },
 };
 
-const map = L.map('map', { zoomControl: true, worldCopyJump: true, minZoom: 2 })
-  .setView([22, -10], 3);
+const map = L.map('map', {
+  zoomControl: true,
+  worldCopyJump: true,
+  minZoom: 2,
+  maxBounds: [[-85, -Infinity], [85, Infinity]],
+  maxBoundsViscosity: 1.0,
+}).setView([22, -10], 3);
 
 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
   attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
